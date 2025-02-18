@@ -5,7 +5,7 @@ from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.drink import drink_crud
 from app.schemas.drink import DrinkCreate, DrinkUpdate, DrinkDB
-from app.api.validators import check_drink_exists
+from app.api.validators import check_drink_exists_by_name, check_drink_already_exists
 
 
 router = APIRouter()
@@ -33,7 +33,7 @@ async def get_drink(
     session: AsyncSession = Depends(get_async_session)
 ):
     """Только для суперюзеров"""
-    return await check_drink_exists(drink_name, session)
+    return await check_drink_exists_by_name(drink_name, session)
 
 
 @router.post(
@@ -46,6 +46,7 @@ async def add_new_drink(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Только для суперюзеров."""
+    await check_drink_already_exists(drink.name, session)
     new_drink = await drink_crud.create(drink, session)
     return new_drink
 
@@ -61,7 +62,7 @@ async def partially_update_drink(
     session: AsyncSession = Depends(get_async_session)
 ):
     """Только для суперюзеров"""
-    drink = await check_drink_exists(drink_name, session)
+    drink = await check_drink_exists_by_name(drink_name, session)
     return await drink_crud.update(drink, obj_in, session)
 
 
@@ -75,5 +76,5 @@ async def remove_drink(
     session: AsyncSession = Depends(get_async_session)
 ):
     """Только для суперюзеров."""
-    drink = await check_drink_exists(drink_name, session)
+    drink = await check_drink_exists_by_name(drink_name, session)
     return await drink_crud.remove(drink, session)

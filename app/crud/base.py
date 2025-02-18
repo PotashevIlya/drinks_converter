@@ -30,6 +30,7 @@ class CRUDBase:
             session: AsyncSession,
     ):
         obj_in_data = obj_in.dict()
+        obj_in_data['name'] = obj_in_data['name'].capitalize()
         db_obj = self.model(**obj_in_data)
         session.add(db_obj)
         await session.commit()
