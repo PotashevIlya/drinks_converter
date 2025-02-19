@@ -14,7 +14,7 @@ async def check_drink_exists_by_name(
     if not drink:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail='Напиток с таким названием не найден'
+            detail=f'Напиток с названием {drink_name} не найден'
         )
     return drink
 
@@ -27,5 +27,5 @@ async def check_drink_already_exists(
     if drink:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail='Напиток с таким названием уже существует'
+            detail=f'Напиток с названием {drink_name} уже существует'
         )

@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field, PositiveInt
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class DrinkBase(BaseModel):
@@ -10,12 +12,13 @@ class DrinkCreate(DrinkBase):
     pass
 
 
-class DrinkUpdate(DrinkBase):
-    pass
-
-
 class DrinkDB(DrinkBase):
     id: int
 
     class Config:
         orm_mode = True
+
+
+class DrinkUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=50)
+    average_strength: Optional[int] = Field(None, gt=0, le=100)
