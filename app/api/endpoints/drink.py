@@ -13,13 +13,11 @@ router = APIRouter()
 
 @router.get(
     '/',
-    response_model=list[DrinkDB],
-    dependencies=[Depends(current_superuser)]
+    response_model=list[DrinkDB]
 )
 async def get_all_drinks(
     session: AsyncSession = Depends(get_async_session)
 ):
-    """Только для суперюзеров"""
     return await drink_crud.get_multi(session)
 
 
