@@ -16,6 +16,7 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv('TOKEN')
 ALL_DRINKS_URL = 'http://127.0.0.1:8000/drink/'
+CONVERTATION_URL = 'http://127.0.0.1:8000/convertation/'
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
@@ -109,6 +110,42 @@ async def source_drink_chosen_incorrectly(message: Message, state: FSMContext):
         ),
         reply_markup=await get_keyboard(target=target)
     )
+
+
+@router.message(ConvertationProcess.choosing_source_drink_ml)
+async def source_drink_ml_chosen(message: Message, state: FSMContext):
+    await state.update_data(source_ml=int(message.text))
+    data = await state.get_data()
+    target = data['target_name']
+    if not target:
+        target = 'Вам без разницы'
+    async with aiohttp.ClientSession() as session:
+        async with session.post(CONVERTATION_URL, json=data) as response:
+            results = await response.json()
+    answer_pattern = [
+        f'Вы хотите выпить: {target}',
+        f'Ваш образец для сравнения: {data["source_name"]}',
+        f'Объем образца(мл): {data["source_ml"]}',
+        '',
+        'Результат конвертации:'
+    ]
+    results_str = '{name} - {ml} мл.'
+    if isinstance(results, list):
+        for result in results:
+            answer_pattern.append(results_str.format(
+                name=result['target_name'],
+                ml=result['target_ml']
+            )
+            )
+        answer_pattern.append('')
+        answer_pattern.append('Начать сначала - /convertation')
+    else:
+        answer_pattern.append(results_str.format(
+            name=results['target_name'], ml=results['target_ml']))
+        answer_pattern.append('')
+        answer_pattern.append('Начать сначала - /convertation')
+    await state.clear()
+    await message.answer(text='\n'.join(answer_pattern))
 
 
 async def main():
